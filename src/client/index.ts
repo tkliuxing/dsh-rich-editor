@@ -7,7 +7,12 @@
  * path the plain composer's submit rides — and keeps the regular composer
  * fully live below it. Copy rides the standard locale seat.
  */
-import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+// Type-only: pulls the Session Controller service merge (ctx.sessions).
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
+// Type-only: pulls the renderer-owned slot registry merge (ctx.slots).
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the input.left /
 // input.dock entries) and the cordis Context merge (ctx.conversation).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
