@@ -23,13 +23,9 @@ const ID = '@mars.liu/dsh-rich-editor'
 /** Externals the dsh loader answers from its module table (platform seed entries). */
 const CLIENT_EXTERNALS = [
   'react', 'react/jsx-runtime', 'react-dom', 'react-dom/client', '@deepseek-ai/cordis',
+  '@deepseek-ai/dsh-client-store',
   '@deepseek-ai/dsh-client-ui-slots',
-  '@deepseek-ai/dsh-client-web-react',
   '@deepseek-ai/dsh-client-ui-primitives',
-  '@deepseek-ai/dsh-client-ui-attachment',
-  '@deepseek-ai/dsh-client-schema-form',
-  // The runtime store exemption: the loader's lazy CJS table answers it.
-  '@deepseek-ai/dsh-client-runtime/client',
 ] as const
 
 /** Node half: plain ESM artifacts consumed from lib/. */

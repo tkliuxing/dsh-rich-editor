@@ -28,14 +28,14 @@ dsh plugin --profile web add @mars.liu/dsh-rich-editor
 pnpm install && pnpm run build && pnpm test
 ```
 
-要求 dsh 家族 `>=0.0.1-rc.1`（已发布到 npm），以及挂载了 `dsh-client-ui-conversation` 的 dsh web 组合。
+要求 dsh 家族 `^0.1.2-alpha.5`（已发布到 npm；0.1.2 线移除了 `dsh-client-runtime` / `dsh-client-web-react`，其 API 现由 `dsh-client-store`、`dsh-client-ui-renderer`、`dsh-api-session-controller`、`dsh-session` 提供），以及挂载了 `dsh-client-ui-conversation` 的 dsh web 组合。
 
 ### 开发说明
 
 npm 上的 `0.0.1-rc.1` dsh 快照只发布了浏览器 loader bundle——node 半边几乎无导出，且若干改名前的依赖名（`dsh-compact`、`dsh-user-interaction`、`dsh-type-meta`、`dsh-client-ui-slash`）从未发布。本仓库用两个手段绕开：
 
 - `package.json > overrides` 把缺失名指向 `vendor/stubs/` 下的空 stub（本插件的任何代码路径都不 import 它们）；
-- `vitest.config.ts` 把 `@deepseek-ai/dsh-client-runtime/client` 与 `.../dsh-client-locale/client` 别名到本地 harness checkout 的 TypeScript 源码（`DSH_CHECKOUT` 环境变量，默认 `../deepseek-harness`），并 inline 全部 `@deepseek-ai/dsh-client-*` 包——与 dsh 树内测试获取 client API 的方式一致。
+- `vitest.config.ts` 通过本地 harness checkout 的 `tsconfig.base.json` 中的 `paths` 映射解析全部 `@deepseek-ai/*` 说明符（`DSH_CHECKOUT` 环境变量，默认 `../deepseek-harness`），并 inline 全部 `@deepseek-ai/dsh-client-*` 包——与 dsh 树内测试获取 client API 的方式一致。
 
 待 dsh 家族重新发布完整可安装的闭包后，移除这两个绕行。
 

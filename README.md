@@ -28,14 +28,14 @@ The package carries its own bundle patch (`cordis.patch.yml` adds the `ui-rich-e
 pnpm install && pnpm run build && pnpm test
 ```
 
-Requires the dsh family at `>=0.0.1-rc.1` (published on npm) and a dsh web composition that mounts `dsh-client-ui-conversation`.
+Requires the dsh family at `^0.1.2-alpha.5` (published on npm; the 0.1.2 line removed `dsh-client-runtime` / `dsh-client-web-react`, whose APIs now come from `dsh-client-store`, `dsh-client-ui-renderer`, `dsh-api-session-controller` and `dsh-session`) and a dsh web composition that mounts `dsh-client-ui-conversation`.
 
 ### Development notes
 
 The npm `0.0.1-rc.1` dsh snapshot ships browser loader bundles only — its node halves export almost nothing, and several pre-rename dependency names (`dsh-compact`, `dsh-user-interaction`, `dsh-type-meta`, `dsh-client-ui-slash`) were never published. This repo works around both:
 
 - `package.json > overrides` points the missing names at empty stubs under `vendor/stubs/` (nothing in this plugin's surface imports them);
-- `vitest.config.ts` aliases `@deepseek-ai/dsh-client-runtime/client` and `.../dsh-client-locale/client` onto a local harness checkout's TypeScript sources (`DSH_CHECKOUT`, default `../deepseek-harness`) and inlines all `@deepseek-ai/dsh-client-*` packages, mirroring how in-repo dsh tests reach client APIs.
+- `vitest.config.ts` resolves every `@deepseek-ai/*` specifier through the `paths` map of a local harness checkout's `tsconfig.base.json` (`DSH_CHECKOUT`, default `../deepseek-harness`) and inlines all `@deepseek-ai/dsh-client-*` packages, mirroring how in-repo dsh tests reach client APIs.
 
 Drop both workarounds when the dsh family republishes a complete, installable closure.
 

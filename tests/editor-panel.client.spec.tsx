@@ -6,10 +6,10 @@
  * cases cover the open/close handoff and the live two-way mirror. */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
-import { EditorView } from '@codemirror/view'
+import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
 import { makeTranslate } from './make-translate.ts'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { EditorView } from '@codemirror/view'
 import { EditorPanel, type EditorPanelProps } from '../src/client/EditorPanel.tsx'
 import type { RichEditorComposerBridge } from '../src/client/slots.ts'
 import { createRichEditorStore } from '../src/client/store.ts'
