@@ -6,8 +6,9 @@
 import { EditorState, Prec, type Extension } from '@codemirror/state'
 import { EditorView, keymap, placeholder } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
-import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language'
-import { markdown } from '@codemirror/lang-markdown'
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
+import { tags } from '@lezer/highlight'
 import { listEnterEdit } from './markdown.ts'
 
 /** Options of one mounted notebook editor. */
@@ -41,6 +42,38 @@ export interface MarkdownEditorHandle {
   destroy(): void
 }
 
+/**
+ * A design token with the harness's light-theme value as the fallback: the
+ * `--shiki-token-*` palette is the web app's own code-highlight sheet
+ * (ui-theme), light on :root and overridden under the dark body attribute,
+ * so the notebook follows the app theme instead of a fixed palette.
+ */
+const token = (name: string, fallback: string): string => `var(${name}, ${fallback})`
+
+/**
+ * Markdown highlight style over the app's tokens. Tag coverage follows
+ * @lezer/markdown's styleTags: structural marks (heading/list/quote/emphasis/
+ * code marks, table delimiters) share one visible punctuation color, headings
+ * and table headers read bold, inline styles keep their typographic cue, and
+ * links, code and labels pick up the code-block palette.
+ */
+export const markdownHighlightStyle = HighlightStyle.define([
+  { tag: tags.heading, fontWeight: 'bold', color: token('--shiki-token-constant', '#1c7ed6') },
+  { tag: tags.processingInstruction, color: token('--shiki-token-punctuation', '#495057') },
+  { tag: tags.emphasis, fontStyle: 'italic' },
+  { tag: tags.strong, fontWeight: 'bold' },
+  { tag: tags.strikethrough, textDecoration: 'line-through' },
+  { tag: tags.link, color: token('--shiki-token-link', '#1971c2'), textDecoration: 'underline' },
+  { tag: tags.url, color: token('--shiki-token-link', '#1971c2') },
+  { tag: tags.monospace, color: token('--shiki-token-parameter', '#e8590c') },
+  { tag: tags.quote, color: token('--shiki-token-string', '#2f9e44') },
+  { tag: tags.contentSeparator, color: token('--shiki-token-comment', '#868e96') },
+  { tag: tags.comment, color: token('--shiki-token-comment', '#868e96'), fontStyle: 'italic' },
+  { tag: tags.labelName, color: token('--shiki-token-function', '#6741d9') },
+  { tag: tags.string, color: token('--shiki-token-string', '#2f9e44') },
+  { tag: [tags.escape, tags.character], color: token('--shiki-token-parameter', '#e8590c') },
+])
+
 /** Enter: continue/exit Markdown lists; decline leaves the default newline. */
 function continueList(view: EditorView): boolean {
   const main = view.state.selection.main
@@ -70,10 +103,12 @@ export function buildExtensions(options: MarkdownEditorOptions): Extension[] {
     ])),
     history(),
     keymap.of([...defaultKeymap, ...historyKeymap]),
-    // codeLanguages stays empty: embedded fenced-code highlighting would
-    // drag the javascript/html parsers into the browser bundle.
-    markdown({ codeLanguages: [] }),
-    syntaxHighlighting(defaultHighlightStyle),
+    // markdownLanguage (not the CommonMark default base) brings the GFM
+    // extensions: tables, strikethrough, task lists, autolinks. codeLanguages
+    // stays empty: embedded fenced-code highlighting would drag the
+    // javascript/html parsers into the browser bundle.
+    markdown({ base: markdownLanguage, codeLanguages: [] }),
+    syntaxHighlighting(markdownHighlightStyle),
     EditorView.lineWrapping,
     placeholder(options.placeholder),
     EditorView.contentAttributes.of({ 'aria-label': options.ariaLabel }),

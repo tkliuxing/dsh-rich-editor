@@ -44,6 +44,9 @@ importers:
       '@deepseek-ai/dsh-session':
         specifier: ^0.1.2-alpha.5
         version: 0.1.2-alpha.5(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-scope@0.1.2-alpha.5(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-invariants@0.1.2-alpha.5(@deepseek-ai/cordis@4.0.1)))
+      '@lezer/highlight':
+        specifier: ^1.0.0
+        version: 1.2.3
       clsx:
         specifier: ^2.0.0
         version: 2.1.1

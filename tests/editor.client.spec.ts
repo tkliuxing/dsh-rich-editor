@@ -3,7 +3,9 @@
  * tears down cleanly in the jsdom lane. */
 import { describe, expect, it, vi } from 'vitest'
 import { EditorView } from '@codemirror/view'
-import { createMarkdownEditor } from '../src/client/editor.ts'
+import { syntaxTree } from '@codemirror/language'
+import { tags } from '@lezer/highlight'
+import { createMarkdownEditor, markdownHighlightStyle } from '../src/client/editor.ts'
 
 /** The mounted view behind a host (EditorView.findFromDOM is CM's public lookup). */
 function viewOf(host: HTMLElement): EditorView {
@@ -120,6 +122,47 @@ describe('createMarkdownEditor', () => {
     content.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true, cancelable: true }))
     expect(options.onSubmit).toHaveBeenCalledTimes(1)
 
+    editor.destroy()
+    host.remove()
+  })
+
+  it('parses GFM tables and strikethrough (markdownLanguage base, not CommonMark)', () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const editor = createMarkdownEditor(host, makeOptions({
+      initial: '| h1 | h2 |\n|----|----|\n| a | b |\n\n~~gone~~',
+    }))
+    const names = new Set<string>()
+    syntaxTree(viewOf(host).state).iterate({ enter: (node) => { names.add(node.name) } })
+    expect(names.has('Table')).toBe(true)
+    expect(names.has('TableHeader')).toBe(true)
+    expect(names.has('TableDelimiter')).toBe(true)
+    expect(names.has('Strikethrough')).toBe(true)
+    editor.destroy()
+    host.remove()
+  })
+
+  it('highlights with the theme-token style: marks, headings and table headers carry its classes', () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const editor = createMarkdownEditor(host, makeOptions({ initial: '# 标题\n\n| h1 |\n|----|\n| a |' }))
+    const classOf = (text: string): string => {
+      const span = [...host.querySelectorAll('.cm-line span')].find(el => el.textContent === text)
+      if (!(span instanceof HTMLElement)) throw new Error(`no highlighted span for ${JSON.stringify(text)}`)
+      return span.className
+    }
+    const mark = markdownHighlightStyle.style([tags.processingInstruction]) ?? ''
+    const heading = markdownHighlightStyle.style([tags.heading]) ?? ''
+    expect(mark).not.toBe('')
+    expect(classOf('#')).toContain(mark)
+    expect(classOf(' 标题')).toContain(heading)
+    // GFM table: pipes are marks, header cells read as headings.
+    expect(classOf('|----|')).toContain(mark)
+    expect(classOf(' h1 ')).toContain(heading)
+    // The style rules resolve through app tokens, never a fixed palette.
+    const rules = markdownHighlightStyle.module?.getRules() ?? ''
+    expect(rules).toContain('var(--shiki-token-punctuation')
+    expect(rules).toContain('var(--shiki-token-constant')
     editor.destroy()
     host.remove()
   })
